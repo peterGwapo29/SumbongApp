@@ -292,10 +292,8 @@ function CreateRequestForm() {
                 className="hidden"
                 id="file-input"
               />
-              <label htmlFor="file-input" className="cursor-pointer">
-                <Button variant="outline" type="button" as="span">
-                  Choose Files
-                </Button>
+              <label htmlFor="file-input" className="cursor-pointer inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors">
+                Choose Files
               </label>
               {files.length > 0 && (
                 <div className="mt-4 space-y-3">

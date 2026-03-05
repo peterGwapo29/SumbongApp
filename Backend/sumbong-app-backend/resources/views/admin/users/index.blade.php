@@ -161,6 +161,17 @@
         @else
             <span></span>
         @endif
+        <form method="GET" action="{{ route('admin.users.index') }}" style="display:flex; align-items:center; gap:8px;">
+            @foreach(request()->except(['per_page', 'page']) as $key => $value)
+                <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+            @endforeach
+            <label class="filter-label" style="margin:0;">Rows per page</label>
+            <select name="per_page" class="filter-select" style="width:auto; min-width:80px;" onchange="this.form.submit()">
+                @foreach([10,25,50,100] as $size)
+                    <option value="{{ $size }}" {{ (int)request('per_page', 10) === $size ? 'selected' : '' }}>{{ $size }}</option>
+                @endforeach
+            </select>
+        </form>
     </div>
 
     {{-- Active filter chips --}}
@@ -275,7 +286,7 @@
                 </table>
             </div>
             <div class="pagination-wrap">
-                {{ $users->withQueryString()->links() }}
+                {{ $users->links() }}
             </div>
         @else
             <div class="empty-state">

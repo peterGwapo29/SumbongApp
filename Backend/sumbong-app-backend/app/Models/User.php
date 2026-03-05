@@ -26,6 +26,7 @@ class User extends Authenticatable
         'password',
         'mobile',
         'address',
+        'avatar_url',
         'user_type',
         'verified',
         'role_id',

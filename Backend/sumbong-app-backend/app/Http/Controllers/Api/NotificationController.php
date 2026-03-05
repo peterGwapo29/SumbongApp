@@ -8,7 +8,6 @@ use App\Models\Notification;
 use App\Models\NotificationDelivery;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class NotificationController extends Controller
 {
@@ -17,16 +16,22 @@ class NotificationController extends Controller
         $user = $request->user();
 
         $query = NotificationDelivery::with('notification')
-            ->where('user_id', $user->id)
-            ->latest('delivered_at');
+            ->where('user_id', $user->id);
 
         if ($request->has('read')) {
             $query->where('read', $request->boolean('read'));
         }
 
-        $deliveries = $query->paginate(20);
+        $deliveries = $query->latest('delivered_at')->paginate(20);
 
-        return NotificationResource::collection($deliveries->pluck('notification'));
+        $notifications = $deliveries->map(function (NotificationDelivery $delivery) {
+            $notification = $delivery->notification;
+            $notification->setRelation('deliveries', collect([$delivery]));
+
+            return $notification;
+        });
+
+        return NotificationResource::collection($notifications);
     }
 
     public function show($id)

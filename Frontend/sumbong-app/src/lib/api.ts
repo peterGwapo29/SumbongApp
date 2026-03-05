@@ -140,6 +140,35 @@ export const authApi = {
     setUser(user);
     return user;
   },
+
+  updateAvatar: async (file: File) => {
+    const formData = new FormData();
+    formData.append('avatar', file);
+
+    const token = getAuthToken();
+    const headers: HeadersInit = {
+      Accept: 'application/json',
+    };
+
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${API_BASE_URL}/user/avatar`, {
+      method: 'POST',
+      headers,
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ message: 'Upload failed' }));
+      throw new Error(error.message || 'Upload failed');
+    }
+
+    const user = await response.json();
+    setUser(user);
+    return user;
+  },
 };
 
 // Service Types API

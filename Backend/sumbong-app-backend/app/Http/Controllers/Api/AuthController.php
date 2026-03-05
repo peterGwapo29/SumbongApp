@@ -7,6 +7,7 @@ use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -87,6 +88,26 @@ class AuthController extends Controller
         ]);
 
         $user->update($validated);
+
+        return new UserResource($user->fresh());
+    }
+
+    public function updateAvatar(Request $request)
+    {
+        $user = $request->user();
+
+        $request->validate([
+            'avatar' => 'required|image|max:2048',
+        ]);
+
+        if ($user->avatar_url) {
+            $existingPath = str_replace('/storage/', '', $user->avatar_url);
+            Storage::disk('public')->delete($existingPath);
+        }
+
+        $path = $request->file('avatar')->store('avatars', 'public');
+        $user->avatar_url = '/storage/' . $path;
+        $user->save();
 
         return new UserResource($user->fresh());
     }

@@ -18,51 +18,63 @@ export default function HomePage() {
   const [unreadNotifications, setUnreadNotifications] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [servicesResponse, requestsResponse, notificationsResponse] = await Promise.all([
-          serviceTypesApi.getAll(),
-          requestsApi.getAll(),
-          notificationsApi.getAll(),
-        ]);
+  const fetchData = async () => {
+    try {
+      const [servicesResponse, requestsResponse, notificationsResponse] = await Promise.all([
+        serviceTypesApi.getAll(),
+        requestsApi.getAll(),
+        notificationsApi.getAll(),
+      ]);
 
-        // Handle services - check if it's wrapped in 'data' property or is direct array
-        const services = Array.isArray(servicesResponse) 
-          ? servicesResponse 
-          : (servicesResponse?.data || []);
-        setServiceTypes(Array.isArray(services) 
+      const services = Array.isArray(servicesResponse)
+        ? servicesResponse
+        : servicesResponse?.data || [];
+      setServiceTypes(
+        Array.isArray(services)
           ? services.filter((s: ServiceType) => s.is_active !== false).slice(0, 4)
-          : []);
+          : []
+      );
 
-        // Handle requests - check if it's wrapped in 'data' property or is direct array
-        const requests = Array.isArray(requestsResponse)
-          ? requestsResponse
-          : (requestsResponse?.data || []);
-        setRecentRequests(Array.isArray(requests) ? requests.slice(0, 3) : []);
-        
-        // Count unread notifications
-        const notifications = Array.isArray(notificationsResponse)
-          ? notificationsResponse
-          : (notificationsResponse?.data || []);
-        const unread = Array.isArray(notifications)
-          ? notifications.filter((n: any) => 
-              n.deliveries && n.deliveries.length > 0 && !n.deliveries[0].read
-            ).length
-          : 0;
-        setUnreadNotifications(unread);
-      } catch (error) {
-        console.error('Failed to fetch data:', error);
-        // Set empty arrays on error
-        setServiceTypes([]);
-        setRecentRequests([]);
-        setUnreadNotifications(0);
-      } finally {
-        setLoading(false);
+      const requests = Array.isArray(requestsResponse)
+        ? requestsResponse
+        : requestsResponse?.data || [];
+      setRecentRequests(Array.isArray(requests) ? requests.slice(0, 3) : []);
+
+      const notifications = Array.isArray(notificationsResponse)
+        ? notificationsResponse
+        : notificationsResponse?.data || [];
+      const unread = Array.isArray(notifications)
+        ? notifications.filter(
+            (n: any) => n.deliveries && n.deliveries.length > 0 && !n.deliveries[0].read
+          ).length
+        : 0;
+      setUnreadNotifications(unread);
+    } catch (error) {
+      console.error('Failed to fetch data:', error);
+      setServiceTypes([]);
+      setRecentRequests([]);
+      setUnreadNotifications(0);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        await fetchData();
+      } catch {
+        // handled in fetchData
       }
     };
 
-    fetchData();
+    void load();
+
+    const interval = setInterval(() => {
+      void fetchData();
+    }, 30000);
+
+    return () => clearInterval(interval);
   }, []);
 
   const handleNavigation = (path: string, message?: string) => {

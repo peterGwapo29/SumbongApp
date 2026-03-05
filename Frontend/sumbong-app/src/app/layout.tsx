@@ -3,6 +3,7 @@ import './style/globals.css';
 import './style/layout.css';
 import { LoadingProvider } from '@/components/mobile/LoadingProvider';
 import { AuthProvider } from '@/contexts/AuthContext';
+import { NotificationsProvider } from '@/components/mobile/NotificationsProvider';
 
 export const metadata: Metadata = {
   title: 'Sumbong App - City Service Request System',
@@ -27,7 +28,9 @@ export default function RootLayout({
       <body>
         <AuthProvider>
           <LoadingProvider>
-            <main>{children}</main>
+            <NotificationsProvider>
+              <main>{children}</main>
+            </NotificationsProvider>
           </LoadingProvider>
         </AuthProvider>
       </body>

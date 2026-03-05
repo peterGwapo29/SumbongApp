@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\RequestResource;
+use App\Models\Notification;
+use App\Models\NotificationDelivery;
 use App\Models\Request;
 use App\Models\RequestStatusHistory;
 use App\Models\Assignment;
@@ -145,6 +147,14 @@ class RequestController extends Controller
             'changed_by' => $user->id,
         ]);
 
+        if ($oldStatus !== $validated['status']) {
+            $this->notifyRequestOwner(
+                $requestModel,
+                'Request status updated',
+                'Your request "' . $requestModel->title . '" status changed from ' . $oldStatus . ' to ' . $validated['status'] . '.'
+            );
+        }
+
         return new RequestResource($requestModel->fresh(['serviceType', 'user', 'statusHistory']));
     }
 
@@ -182,6 +192,12 @@ class RequestController extends Controller
                 'status' => 'assigned',
                 'changed_by' => $user->id,
             ]);
+
+            $this->notifyRequestOwner(
+                $requestModel,
+                'Request assigned',
+                'Your request "' . $requestModel->title . '" has been assigned to a staff member.'
+            );
         }
 
         return new RequestResource($requestModel->fresh(['serviceType', 'user', 'assignments.user']));
@@ -249,6 +265,23 @@ class RequestController extends Controller
         ];
 
         return response()->json($stats);
+    }
+
+    private function notifyRequestOwner(Request $requestModel, string $title, string $message): void
+    {
+        $notification = Notification::create([
+            'title' => $title,
+            'message' => $message,
+            'type' => 'request_update',
+            'target_audience' => 'residents',
+        ]);
+
+        NotificationDelivery::create([
+            'notification_id' => $notification->id,
+            'user_id' => $requestModel->user_id,
+            'read' => false,
+            'delivered_at' => now(),
+        ]);
     }
 }
 

@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Notification;
+use App\Models\NotificationDelivery;
 use App\Models\Request;
 use App\Models\RequestStatusHistory;
 use App\Models\Assignment;
@@ -17,23 +19,33 @@ class RequestManagementController extends Controller
     {
         $query = Request::with(['user', 'serviceType', 'assignments.user']);
 
-        if ($request->has('status')) {
-            $query->where('status', $request->status);
+        $perPage = max(5, min(100, (int) $request->get('per_page', 10)));
+
+        // Apply filters only when a non-empty value is provided
+        if ($request->filled('status')) {
+            $query->where('status', $request->string('status'));
         }
 
-        if ($request->has('service_type_id')) {
-            $query->where('service_type_id', $request->service_type_id);
+        if ($request->filled('service_type_id')) {
+            $query->where('service_type_id', $request->integer('service_type_id'));
         }
 
-        if ($request->has('priority')) {
-            $query->where('priority', $request->priority);
+        if ($request->filled('priority')) {
+            $query->where('priority', $request->string('priority'));
         }
 
-        if ($request->has('user_id')) {
-            $query->where('user_id', $request->user_id);
+        if ($request->filled('user_id')) {
+            $query->where('user_id', $request->integer('user_id'));
+        }
+        if ($request->filled('search')) {
+            $search = $request->string('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', '%' . $search . '%')
+                    ->orWhere('description', 'like', '%' . $search . '%');
+            });
         }
 
-        $requests = $query->latest()->paginate(20);
+        $requests = $query->latest()->paginate($perPage)->withQueryString();
         $serviceTypes = ServiceType::where('is_active', true)->get();
         $staff = User::whereHas('role', function ($q) {
             $q->whereIn('name', ['staff', 'admin', 'clerk', 'inspector']);
@@ -180,6 +192,12 @@ class RequestManagementController extends Controller
                 'notes' => $validated['status_notes'] ?? 'Status updated by admin',
                 'changed_by' => auth()->id(),
             ]);
+
+            $this->notifyRequestOwner(
+                $requestModel,
+                'Request status updated',
+                'Your request "' . $requestModel->title . '" status changed from ' . $oldStatus . ' to ' . $validated['status'] . '.'
+            );
         }
 
         // Handle assignment
@@ -230,6 +248,14 @@ class RequestManagementController extends Controller
             'changed_by' => auth()->id(),
         ]);
 
+        if ($oldStatus !== $validated['status']) {
+            $this->notifyRequestOwner(
+                $requestModel,
+                'Request status updated',
+                'Your request "' . $requestModel->title . '" status changed from ' . $oldStatus . ' to ' . $validated['status'] . '.'
+            );
+        }
+
         return redirect()->back()->with('success', 'Request status updated successfully.');
     }
 
@@ -262,9 +288,32 @@ class RequestManagementController extends Controller
                 'notes' => 'Request assigned to staff',
                 'changed_by' => auth()->id(),
             ]);
+
+            $this->notifyRequestOwner(
+                $requestModel,
+                'Request assigned',
+                'Your request "' . $requestModel->title . '" has been assigned to a staff member.'
+            );
         }
 
         return redirect()->back()->with('success', 'Request assigned successfully.');
+    }
+
+    private function notifyRequestOwner(Request $requestModel, string $title, string $message): void
+    {
+        $notification = Notification::create([
+            'title' => $title,
+            'message' => $message,
+            'type' => 'request_update',
+            'target_audience' => 'residents',
+        ]);
+
+        NotificationDelivery::create([
+            'notification_id' => $notification->id,
+            'user_id' => $requestModel->user_id,
+            'read' => false,
+            'delivered_at' => now(),
+        ]);
     }
 }
 

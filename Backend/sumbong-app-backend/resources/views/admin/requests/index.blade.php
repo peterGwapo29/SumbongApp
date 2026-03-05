@@ -235,12 +235,17 @@
                 </span>
             @endif
         </div>
-        <a href="{{ route('admin.requests.create') }}" class="btn-primary">
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-            </svg>
-            Create Request
-        </a>
+        <form method="GET" action="{{ route('admin.requests.index') }}" style="display:flex; align-items:center; gap:8px;">
+            @foreach(request()->except(['per_page','page']) as $key => $value)
+                <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+            @endforeach
+            <label class="filter-label" style="margin:0;">Rows per page</label>
+            <select name="per_page" class="filter-select" style="width:auto; min-width:80px;" onchange="this.form.submit()">
+                @foreach([10,25,50,100] as $size)
+                    <option value="{{ $size }}" {{ (int)request('per_page', 10) === $size ? 'selected' : '' }}>{{ $size }}</option>
+                @endforeach
+            </select>
+        </form>
     </div>
 
     {{-- Success alert --}}
@@ -385,7 +390,7 @@
                 </table>
             </div>
             <div class="pagination-wrap">
-                {{ $requests->withQueryString()->links() }}
+                {{ $requests->links() }}
             </div>
         @else
             <div class="empty-state">
@@ -395,7 +400,7 @@
                     </svg>
                 </div>
                 <div class="empty-title">No requests found</div>
-                <div class="empty-sub">Try adjusting your filters or create a new request.</div>
+                <div class="empty-sub">Try adjusting your filters.</div>
             </div>
         @endif
     </div>

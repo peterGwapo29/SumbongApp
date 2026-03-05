@@ -3,14 +3,37 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Notification;
+use App\Models\NotificationDelivery;
 use App\Models\ServiceType;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class ServiceTypeManagementController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $serviceTypes = ServiceType::latest()->paginate(20);
+        $perPage = max(5, min(100, (int) $request->get('per_page', 10)));
+
+        $query = ServiceType::query();
+
+        if ($request->filled('search')) {
+            $search = $request->string('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', '%' . $search . '%')
+                    ->orWhere('department', 'like', '%' . $search . '%');
+            });
+        }
+
+        if ($request->filled('status')) {
+            if ($request->string('status') === 'active') {
+                $query->where('is_active', true);
+            } elseif ($request->string('status') === 'inactive') {
+                $query->where('is_active', false);
+            }
+        }
+
+        $serviceTypes = $query->latest()->paginate($perPage)->withQueryString();
 
         return view('admin.service-types.index', compact('serviceTypes'));
     }
@@ -30,7 +53,12 @@ class ServiceTypeManagementController extends Controller
             'is_active' => 'boolean',
         ]);
 
-        ServiceType::create($validated);
+        $serviceType = ServiceType::create($validated);
+
+        $this->notifyResidents(
+            'New Service Available',
+            'A new service "' . $serviceType->name . '" is now available.'
+        );
 
         return redirect()->route('admin.service-types.index')
             ->with('success', 'Service type created successfully');
@@ -57,6 +85,11 @@ class ServiceTypeManagementController extends Controller
 
         $serviceType->update($validated);
 
+        $this->notifyResidents(
+            'Service Updated',
+            'The service "' . $serviceType->name . '" has been updated.'
+        );
+
         return redirect()->route('admin.service-types.index')
             ->with('success', 'Service type updated successfully');
     }
@@ -64,10 +97,47 @@ class ServiceTypeManagementController extends Controller
     public function destroy($id)
     {
         $serviceType = ServiceType::findOrFail($id);
+        $serviceName = $serviceType->name;
         $serviceType->delete();
+
+        $this->notifyResidents(
+            'Service Removed',
+            'The service "' . $serviceName . '" is no longer available.'
+        );
 
         return redirect()->route('admin.service-types.index')
             ->with('success', 'Service type deleted successfully');
+    }
+
+    private function notifyResidents(string $title, string $message): void
+    {
+        $notification = Notification::create([
+            'title' => $title,
+            'message' => $message,
+            'type' => 'alert',
+            'target_audience' => 'residents',
+        ]);
+
+        $users = User::where('user_type', 'resident')->get();
+
+        if ($users->isEmpty()) {
+            return;
+        }
+
+        $now = now();
+
+        $deliveries = $users->map(static function (User $user) use ($notification, $now): array {
+            return [
+                'notification_id' => $notification->id,
+                'user_id' => $user->id,
+                'read' => false,
+                'delivered_at' => $now,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ];
+        })->toArray();
+
+        NotificationDelivery::insert($deliveries);
     }
 }
 

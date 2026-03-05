@@ -3,8 +3,9 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  mobile: string;
-  address: string;
+  mobile?: string | null;
+  address?: string | null;
+  avatar_url?: string;
   user_type: 'resident' | 'non_resident';
   verified: boolean;
   role_id: string;

@@ -13,23 +13,26 @@ class UserManagementController extends Controller
     {
         $query = User::with('role');
 
-        if ($request->has('user_type')) {
-            $query->where('user_type', $request->user_type);
+        $perPage = max(5, min(100, (int) $request->get('per_page', 10)));
+
+        // Apply filters only when a non-empty value is provided
+        if ($request->filled('user_type')) {
+            $query->where('user_type', $request->string('user_type'));
         }
 
-        if ($request->has('verified')) {
+        if ($request->filled('verified')) {
             $query->where('verified', $request->boolean('verified'));
         }
 
-        if ($request->has('search')) {
-            $search = $request->search;
+        if ($request->filled('search')) {
+            $search = $request->string('search');
             $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%");
+                $q->where('name', 'like', '%' . $search . '%')
+                    ->orWhere('email', 'like', '%' . $search . '%');
             });
         }
 
-        $users = $query->latest()->paginate(20);
+        $users = $query->latest()->paginate($perPage)->withQueryString();
         $roles = Role::all();
 
         return view('admin.users.index', compact('users', 'roles'));

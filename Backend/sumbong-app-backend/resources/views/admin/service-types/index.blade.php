@@ -107,12 +107,44 @@
         @else
             <span></span>
         @endif
-        <a href="{{ route('admin.service-types.create') }}" class="btn-primary">
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-            </svg>
-            Create New
-        </a>
+        <div style="display:flex; align-items:center; gap:8px;">
+            <form method="GET" action="{{ route('admin.service-types.index') }}" style="display:flex; align-items:center; gap:8px; margin-right:8px;">
+                @foreach(request()->except(['search','status','per_page','page']) as $key => $value)
+                    <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+                @endforeach
+                <input
+                    type="text"
+                    name="search"
+                    value="{{ request('search') }}"
+                    placeholder="Search services…"
+                    class="filter-input"
+                    style="width:180px;"
+                >
+                <select name="status" class="filter-select" style="width:130px;">
+                    <option value="">All status</option>
+                    <option value="active" {{ request('status') === 'active' ? 'selected' : '' }}>Active</option>
+                    <option value="inactive" {{ request('status') === 'inactive' ? 'selected' : '' }}>Inactive</option>
+                </select>
+                <button type="submit" class="btn-filter">Apply</button>
+            </form>
+            <form method="GET" action="{{ route('admin.service-types.index') }}" style="display:flex; align-items:center; gap:6px;">
+                @foreach(request()->except(['per_page','page']) as $key => $value)
+                    <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+                @endforeach
+                <label class="result-count" style="margin:0;">Rows</label>
+                <select name="per_page" class="filter-select" style="width:80px;" onchange="this.form.submit()">
+                    @foreach([10,25,50,100] as $size)
+                        <option value="{{ $size }}" {{ (int)request('per_page', 10) === $size ? 'selected' : '' }}>{{ $size }}</option>
+                    @endforeach
+                </select>
+            </form>
+            <a href="{{ route('admin.service-types.create') }}" class="btn-primary">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                </svg>
+                Create New
+            </a>
+        </div>
     </div>
 
     {{-- Success alert --}}

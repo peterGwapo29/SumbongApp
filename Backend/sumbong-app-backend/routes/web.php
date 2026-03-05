@@ -25,8 +25,14 @@ Route::get('/', function () {
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     
-    // Request Management with full CRUD
-    Route::resource('requests', RequestManagementController::class);
+    // Request Management (users create requests; admins can view, edit, update, and delete)
+    Route::resource('requests', RequestManagementController::class)->only([
+        'index',
+        'show',
+        'edit',
+        'update',
+        'destroy',
+    ]);
     Route::post('requests/{id}/status', [RequestManagementController::class, 'updateStatus'])->name('requests.status');
     Route::post('requests/{id}/assign', [RequestManagementController::class, 'assign'])->name('requests.assign');
     

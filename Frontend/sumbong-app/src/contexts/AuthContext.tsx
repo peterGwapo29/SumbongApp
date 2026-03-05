@@ -19,6 +19,7 @@ interface AuthContextType {
   }) => Promise<void>;
   logout: () => Promise<void>;
   updateUser: (data: { name?: string; mobile?: string; address?: string }) => Promise<void>;
+  updateAvatar: (file: File) => Promise<void>;
   refreshUser: () => Promise<void>;
 }
 
@@ -28,25 +29,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUserState] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    // Check if user is already logged in
-    const storedUser = getUser();
-    if (storedUser) {
-      setUserState(storedUser);
-      // Verify token is still valid by fetching user
-      authApi.getUser().catch(() => {
-        // Token invalid, clear auth
-        setAuthToken(null);
-        setUser(null);
-        setUserState(null);
-      });
+  const mergeUser = (current: User | null, incoming: User): User => {
+    if (!current) {
+      return incoming;
     }
-    setLoading(false);
+
+    return {
+      ...current,
+      ...incoming,
+      mobile: incoming.mobile ?? current.mobile,
+      address: incoming.address ?? current.address,
+    };
+  };
+
+  useEffect(() => {
+    const initializeAuth = async () => {
+      const storedUser = getUser();
+      if (storedUser) {
+        setUserState(storedUser);
+        try {
+          const freshUser = await authApi.getUser();
+          setUserState((prev) => mergeUser(prev, freshUser));
+        } catch {
+          setAuthToken(null);
+          setUser(null);
+          setUserState(null);
+        }
+      }
+      setLoading(false);
+    };
+
+    void initializeAuth();
   }, []);
 
   const login = async (email: string, password: string) => {
     const result = await authApi.login({ email, password });
-    setUserState(result.user);
+    setUserState((prev) => mergeUser(prev, result.user));
   };
 
   const register = async (data: {
@@ -59,7 +77,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     user_type?: 'resident' | 'non_resident';
   }) => {
     const result = await authApi.register(data);
-    setUserState(result.user);
+    setUserState((prev) => mergeUser(prev, result.user));
   };
 
   const logout = async () => {
@@ -69,12 +87,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const updateUser = async (data: { name?: string; mobile?: string; address?: string }) => {
     const updatedUser = await authApi.updateProfile(data);
-    setUserState(updatedUser);
+    setUserState((prev) => mergeUser(prev, updatedUser));
+  };
+
+  const updateAvatar = async (file: File) => {
+    const updatedUser = await authApi.updateAvatar(file);
+    setUserState((prev) => mergeUser(prev, updatedUser));
   };
 
   const refreshUser = async () => {
     const updatedUser = await authApi.getUser();
-    setUserState(updatedUser);
+    setUserState((prev) => mergeUser(prev, updatedUser));
   };
 
   return (
@@ -86,6 +109,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         register,
         logout,
         updateUser,
+        updateAvatar,
         refreshUser,
       }}
     >

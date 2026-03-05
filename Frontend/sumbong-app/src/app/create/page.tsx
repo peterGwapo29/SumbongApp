@@ -292,9 +292,9 @@ function CreateRequestForm() {
                 className="hidden"
                 id="file-input"
               />
-              <label htmlFor="file-input" className="cursor-pointer inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors">
+              <span className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 cursor-pointer">
                 Choose Files
-              </label>
+              </span>
               {files.length > 0 && (
                 <div className="mt-4 space-y-3">
                   <p className="text-sm font-medium text-gray-700 mb-2">Selected files ({files.length}):</p>

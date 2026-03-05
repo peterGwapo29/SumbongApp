@@ -1,0 +1,22 @@
+/* Hide Next.js loading indicator */
+[data-indicator-status],
+#__next-loading-indicator,
+.nextjs-loading-bar,
+.nextjs-loading-bar__spinner,
+.nextjs-loading-bar__bar,
+[data-nextjs-loading-indicator] {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    height: 0 !important;
+    width: 0 !important;
+    position: absolute !important;
+    left: -9999px !important;
+}
+
+/* Hide any loading spinners */
+[class*="loading"],
+[class*="spinner"],
+[data-loading] {
+    display: none !important;
+}

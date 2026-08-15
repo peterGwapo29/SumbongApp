@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { notificationsApi } from '@/lib/api';
+import { notificationsApi, getAuthToken } from '@/lib/api';
 
 interface NotificationsContextType {
   unreadCount: number;
@@ -14,6 +14,10 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
   const [unreadCount, setUnreadCount] = useState(0);
 
   const loadNotifications = async () => {
+    if (!getAuthToken()) {
+      setUnreadCount(0);
+      return;
+    }
     try {
       const response = await notificationsApi.getAll();
       const notifications = Array.isArray(response) ? response : response?.data || [];

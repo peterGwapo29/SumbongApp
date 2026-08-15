@@ -6,7 +6,7 @@ import Layout from '@/components/mobile/Layout';
 import Card from '@/components/mobile/Card';
 import StatusBadge from '@/components/mobile/StatusBadge';
 import Button from '@/components/mobile/Button';
-import { requestsApi } from '@/lib/api';
+import { requestsApi, getStorageUrl } from '@/lib/api';
 import { Request } from '@/types';
 import { useLoadingContext } from '@/components/mobile/LoadingProvider';
 
@@ -153,19 +153,43 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
           </Card>
         )}
 
-        {/* Attachments */}
+        {/* Area Photos */}
         {request.attachments && request.attachments.length > 0 && (
           <Card>
-            <h3 className="font-semibold text-gray-900 mb-3">Attachments</h3>
-            <div className="space-y-2">
+            <h3 className="font-semibold text-gray-900 mb-3">Area Photos</h3>
+            <div className="grid grid-cols-2 gap-3">
               {request.attachments.map((attachment) => (
-                <div key={attachment.id} className="flex items-center p-2 bg-gray-50 rounded">
-                  <span className="text-xl mr-2">📎</span>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">{attachment.file_name}</p>
-                    <p className="text-xs text-gray-600">{attachment.file_type}</p>
-                  </div>
-                </div>
+                attachment.file_type === 'image' ? (
+                  <a
+                    key={attachment.id}
+                    href={getStorageUrl(attachment.file_url)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block rounded-lg overflow-hidden border border-gray-200"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={getStorageUrl(attachment.file_url)}
+                      alt={attachment.file_name}
+                      className="w-full h-32 object-cover"
+                    />
+                    <p className="text-xs text-gray-600 p-2 truncate">{attachment.file_name}</p>
+                  </a>
+                ) : (
+                  <a
+                    key={attachment.id}
+                    href={getStorageUrl(attachment.file_url)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center p-3 bg-gray-50 rounded-lg border border-gray-200"
+                  >
+                    <span className="text-xl mr-2">📎</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{attachment.file_name}</p>
+                      <p className="text-xs text-gray-600">{attachment.file_type}</p>
+                    </div>
+                  </a>
+                )
               ))}
             </div>
           </Card>

@@ -1,6 +1,7 @@
 'use client';
 
-import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
+import { usePathname } from 'next/navigation';
 import LoadingScreen from './LoadingScreen';
 
 interface LoadingContextType {
@@ -16,6 +17,7 @@ const LoadingContext = createContext<LoadingContextType | undefined>(undefined);
 export function LoadingProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('Loading...');
+  const pathname = usePathname();
 
   const startLoading = useCallback((message?: string) => {
     setLoadingMessage(message || 'Loading...');
@@ -25,6 +27,10 @@ export function LoadingProvider({ children }: { children: ReactNode }) {
   const stopLoading = useCallback(() => {
     setIsLoading(false);
   }, []);
+
+  useEffect(() => {
+    stopLoading();
+  }, [pathname, stopLoading]);
 
   const withLoading = useCallback(async <T,>(
     asyncFn: () => Promise<T>,

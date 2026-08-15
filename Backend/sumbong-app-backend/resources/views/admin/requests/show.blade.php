@@ -62,6 +62,8 @@
         .attachment-icon svg { width: 18px; height: 18px; }
         .attachment-name { font-size: 12px; font-weight: 600; color: #374151; text-align: center; word-break: break-all; }
         .attachment-meta { font-size: 11px; color: #9CA3AF; }
+        .attachment-thumb { width: 100%; height: 100px; object-fit: cover; border-radius: 8px; margin-bottom: 6px; }
+        .attachment-item-image { padding: 8px; }
 
         /* ── Timeline ── */
         .timeline { position: relative; padding-left: 24px; }
@@ -226,21 +228,29 @@
                 </div>
             </div>
 
-            {{-- Attachments --}}
+            {{-- Area Photos / Attachments --}}
             @if($requestModel->attachments->count() > 0)
                 <div class="detail-card">
                     <div class="detail-card-header">
-                        <span class="detail-card-title">Attachments ({{ $requestModel->attachments->count() }})</span>
+                        <span class="detail-card-title">Area Photos ({{ $requestModel->attachments->count() }})</span>
                     </div>
                     <div class="detail-card-body">
                         <div class="attachment-grid">
                             @foreach($requestModel->attachments as $attachment)
-                                <a href="{{ asset($attachment->file_url) }}" target="_blank" class="attachment-item">
-                                    <div class="attachment-icon">
-                                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.414a4 4 0 00-5.656-5.656l-6.415 6.415a3 3 0 104.243 4.243l6.586-6.586"/>
-                                        </svg>
-                                    </div>
+                                <a href="{{ asset($attachment->file_url) }}" target="_blank" class="attachment-item {{ $attachment->file_type === 'image' ? 'attachment-item-image' : '' }}">
+                                    @if($attachment->file_type === 'image')
+                                        <img
+                                            src="{{ asset($attachment->file_url) }}"
+                                            alt="{{ $attachment->file_name }}"
+                                            class="attachment-thumb"
+                                        >
+                                    @else
+                                        <div class="attachment-icon">
+                                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.414a4 4 0 00-5.656-5.656l-6.415 6.415a3 3 0 104.243 4.243l6.586-6.586"/>
+                                            </svg>
+                                        </div>
+                                    @endif
                                     <span class="attachment-name">{{ $attachment->file_name }}</span>
                                     <span class="attachment-meta">{{ strtoupper($attachment->file_type) }} · {{ round($attachment->file_size / 1024, 1) }} KB</span>
                                 </a>

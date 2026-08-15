@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Layout from '@/components/mobile/Layout';
 import Card from '@/components/mobile/Card';
@@ -29,14 +29,43 @@ function CreateRequestForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [loadingServices, setLoadingServices] = useState(true);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
+
+  const addFiles = (newFiles: File[]) => {
+    const imageFiles = newFiles.filter((file) => file.type.startsWith('image/'));
+    if (imageFiles.length === 0) return;
+
+    const currentFileCount = files.length;
+    setFiles((prev) => [...prev, ...imageFiles]);
+
+    imageFiles.forEach((file, index) => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          setFilePreviews((prev) => {
+            const updated = [...prev];
+            updated[currentFileCount + index] = event.target!.result as string;
+            return updated;
+          });
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      addFiles(Array.from(e.target.files));
+    }
+    e.target.value = '';
+  };
 
   useEffect(() => {
-    // Fetch service types
     serviceTypesApi.getAll()
       .then((response) => {
-        // Handle response - check if it's wrapped in 'data' property or is direct array
-        const data = Array.isArray(response) 
-          ? response 
+        const data = Array.isArray(response)
+          ? response
           : (response?.data || []);
         setServiceTypes(Array.isArray(data) ? data : []);
         if (preselectedService) {
@@ -52,40 +81,6 @@ function CreateRequestForm() {
         setLoadingServices(false);
       });
   }, [preselectedService]);
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const newFiles = Array.from(e.target.files);
-      const currentFileCount = files.length;
-      
-      setFiles(prev => [...prev, ...newFiles]);
-      
-      // Create previews for image files
-      newFiles.forEach((file, index) => {
-        if (file.type.startsWith('image/')) {
-          const reader = new FileReader();
-          reader.onload = (e) => {
-            if (e.target?.result) {
-              setFilePreviews(prev => {
-                const updated = [...prev];
-                updated[currentFileCount + index] = e.target!.result as string;
-                return updated;
-              });
-            }
-          };
-          reader.readAsDataURL(file);
-        } else {
-          setFilePreviews(prev => {
-            const updated = [...prev];
-            updated[currentFileCount + index] = '';
-            return updated;
-          });
-        }
-      });
-    }
-    // Reset input to allow selecting the same file again
-    e.target.value = '';
-  };
 
   const removeFile = (index: number) => {
     setFiles(prev => prev.filter((_, i) => i !== index));
@@ -112,21 +107,25 @@ function CreateRequestForm() {
       // Extract request ID from response (handle both direct and wrapped responses)
       const requestId = request?.id || request?.data?.id || (typeof request === 'object' && 'id' in request ? request.id : null);
       
-      // Upload attachments if any
+      // Upload area photos if any
       if (files.length > 0 && requestId) {
         setUploadingFiles(true);
         try {
-          const uploadPromises = files.map((file) =>
-            attachmentsApi.upload(String(requestId), file).catch((err) => {
-              console.error('Failed to upload attachment:', err);
-              return null; // Continue even if attachment upload fails
-            })
+          const results = await Promise.all(
+            files.map((file) =>
+              attachmentsApi.upload(String(requestId), file).catch((err) => {
+                console.error('Failed to upload photo:', err);
+                return null;
+              })
+            )
           );
-          
-          await Promise.all(uploadPromises);
+
+          const failedCount = results.filter((result) => result === null).length;
+          if (failedCount > 0) {
+            console.warn(`${failedCount} photo(s) failed to upload`);
+          }
         } catch (uploadError) {
-          console.error('Error uploading files:', uploadError);
-          // Continue even if upload fails
+          console.error('Error uploading photos:', uploadError);
         } finally {
           setUploadingFiles(false);
         }
@@ -276,60 +275,83 @@ function CreateRequestForm() {
             </select>
           </Card>
 
-          {/* Attachments */}
+          {/* Area Photo */}
           <Card>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Attachments (Optional)
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Area Photo
             </label>
+            <p className="text-xs text-gray-500 mb-3">
+              Take a photo or choose from your gallery so admins can see the situation
+            </p>
             <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-              <span className="text-2xl mb-2 block">📷</span>
-              <p className="text-sm text-gray-600 mb-2">Add photos or documents</p>
+              <span className="text-3xl mb-2 block">📷</span>
+              <p className="text-sm text-gray-600 mb-4">
+                {files.length > 0
+                  ? `${files.length} photo${files.length > 1 ? 's' : ''} selected`
+                  : 'No photos added yet'}
+              </p>
+
               <input
+                ref={cameraInputRef}
                 type="file"
+                accept="image/*"
+                capture="environment"
+                onChange={handleFileChange}
+                className="hidden"
+              />
+              <input
+                ref={galleryInputRef}
+                type="file"
+                accept="image/*"
                 multiple
                 onChange={handleFileChange}
-                accept="image/*,video/*,.pdf,.doc,.docx"
                 className="hidden"
-                id="file-input"
               />
-              <span className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 cursor-pointer">
-                Choose Files
-              </span>
+
+              <div className="flex flex-col sm:flex-row gap-2 justify-center">
+                <button
+                  type="button"
+                  onClick={() => cameraInputRef.current?.click()}
+                  className="inline-flex items-center justify-center px-4 py-2.5 border border-blue-300 rounded-lg text-sm font-medium text-blue-700 bg-blue-50 hover:bg-blue-100"
+                >
+                  📸 Take Photo
+                </button>
+                <button
+                  type="button"
+                  onClick={() => galleryInputRef.current?.click()}
+                  className="inline-flex items-center justify-center px-4 py-2.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                >
+                  🖼️ Choose from Gallery
+                </button>
+              </div>
+
               {files.length > 0 && (
                 <div className="mt-4 space-y-3">
-                  <p className="text-sm font-medium text-gray-700 mb-2">Selected files ({files.length}):</p>
                   <div className="grid grid-cols-2 gap-3">
                     {files.map((file, index) => (
                       <div key={index} className="relative border border-gray-200 rounded-lg p-2 bg-gray-50">
-                        {file.type.startsWith('image/') && filePreviews[index] ? (
-                          <div className="relative">
+                        <div className="relative">
+                          {filePreviews[index] ? (
+                            // eslint-disable-next-line @next/next/no-img-element
                             <img
                               src={filePreviews[index]}
                               alt={file.name}
-                              className="w-full h-24 object-cover rounded"
+                              className="w-full h-28 object-cover rounded"
                             />
-                            <button
-                              type="button"
-                              onClick={() => removeFile(index)}
-                              className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
-                            >
-                              ×
-                            </button>
-                          </div>
-                        ) : (
-                          <div className="relative">
-                            <div className="w-full h-24 bg-gray-200 rounded flex items-center justify-center">
-                              <span className="text-2xl">📄</span>
+                          ) : (
+                            <div className="w-full h-28 bg-gray-200 rounded flex items-center justify-center">
+                              <span className="text-2xl">📷</span>
                             </div>
-                            <button
-                              type="button"
-                              onClick={() => removeFile(index)}
-                              className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
-                            >
-                              ×
-                            </button>
-                          </div>
-                        )}
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => removeFile(index)}
+                            className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
+                            aria-label="Remove photo"
+                          >
+                            ×
+                          </button>
+                        </div>
                         <p className="text-xs text-gray-600 mt-1 truncate" title={file.name}>
                           {file.name}
                         </p>
@@ -347,10 +369,10 @@ function CreateRequestForm() {
           {/* Submit */}
           <div className="pb-4">
             <Button type="submit" fullWidth disabled={loading || uploadingFiles}>
-              {uploadingFiles 
-                ? 'Uploading files...' 
-                : loading 
-                  ? 'Submitting...' 
+              {uploadingFiles
+                ? 'Uploading photos...'
+                : loading
+                  ? 'Submitting...'
                   : 'Submit Request'}
             </Button>
           </div>

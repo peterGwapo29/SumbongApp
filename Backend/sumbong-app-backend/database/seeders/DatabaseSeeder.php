@@ -25,17 +25,6 @@ class DatabaseSeeder extends Seeder
             Role::create($role);
         }
 
-        // Create Admin User
-        $adminRole = Role::where('name', 'admin')->first();
-        User::create([
-            'name' => 'Admin User',
-            'email' => 'admin@sumbong.app',
-            'password' => Hash::make('password'),
-            'user_type' => 'resident',
-            'verified' => true,
-            'role_id' => $adminRole->id,
-        ]);
-
         // Create Service Types
         $serviceTypes = [
             [
@@ -85,5 +74,9 @@ class DatabaseSeeder extends Seeder
         foreach ($serviceTypes as $serviceType) {
             ServiceType::create($serviceType);
         }
+
+        $this->call([
+            AdminUserSeeder::class,
+        ]);
     }
 }

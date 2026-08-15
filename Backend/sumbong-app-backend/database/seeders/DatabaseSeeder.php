@@ -4,9 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Role;
 use App\Models\ServiceType;
-use App\Models\User;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -22,7 +20,10 @@ class DatabaseSeeder extends Seeder
         ];
 
         foreach ($roles as $role) {
-            Role::create($role);
+            Role::firstOrCreate(
+                ['name' => $role['name']],
+                ['permissions' => $role['permissions']]
+            );
         }
 
         // Create Service Types
@@ -72,7 +73,10 @@ class DatabaseSeeder extends Seeder
         ];
 
         foreach ($serviceTypes as $serviceType) {
-            ServiceType::create($serviceType);
+            ServiceType::firstOrCreate(
+                ['name' => $serviceType['name']],
+                $serviceType
+            );
         }
 
         $this->call([

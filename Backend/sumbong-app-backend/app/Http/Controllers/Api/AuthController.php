@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\UserResource;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -23,6 +24,8 @@ class AuthController extends Controller
             'user_type' => 'nullable|in:resident,non_resident',
         ]);
 
+        $residentRole = Role::where('name', 'resident')->first();
+
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
@@ -30,7 +33,10 @@ class AuthController extends Controller
             'mobile' => $validated['mobile'] ?? null,
             'address' => $validated['address'] ?? null,
             'user_type' => $validated['user_type'] ?? 'resident',
+            'role_id' => $residentRole?->id,
         ]);
+
+        $user->load('role');
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
@@ -55,11 +61,14 @@ class AuthController extends Controller
             ]);
         }
 
+        $user->load('role');
+
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
             'user' => new UserResource($user),
             'token' => $token,
+            'redirect_url' => $user->isAdmin() ? url('/admin') : null,
         ]);
     }
 
@@ -72,7 +81,7 @@ class AuthController extends Controller
 
     public function user(Request $request)
     {
-        return new UserResource($request->user());
+        return new UserResource($request->user()->load('role'));
     }
 
     public function updateProfile(Request $request)
@@ -81,7 +90,7 @@ class AuthController extends Controller
 
         $validated = $request->validate([
             'name' => 'sometimes|string|max:255',
-            'email' => 'sometimes|string|email|max:255|unique:users,email,' . $user->id,
+            'email' => 'sometimes|string|email|max:255|unique:users,email,'.$user->id,
             'mobile' => 'nullable|string|max:20',
             'address' => 'nullable|string',
             'user_type' => 'sometimes|in:resident,non_resident',
@@ -89,7 +98,7 @@ class AuthController extends Controller
 
         $user->update($validated);
 
-        return new UserResource($user->fresh());
+        return new UserResource($user->fresh()->load('role'));
     }
 
     public function updateAvatar(Request $request)
@@ -106,10 +115,9 @@ class AuthController extends Controller
         }
 
         $path = $request->file('avatar')->store('avatars', 'public');
-        $user->avatar_url = '/storage/' . $path;
+        $user->avatar_url = '/storage/'.$path;
         $user->save();
 
-        return new UserResource($user->fresh());
+        return new UserResource($user->fresh()->load('role'));
     }
 }
-

@@ -7,7 +7,7 @@ import { User } from '@/types';
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<{ user: User; token: string; redirect_url?: string | null }>;
   register: (data: {
     name: string;
     email: string;
@@ -65,6 +65,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (email: string, password: string) => {
     const result = await authApi.login({ email, password });
     setUserState((prev) => mergeUser(prev, result.user));
+    return result;
   };
 
   const register = async (data: {

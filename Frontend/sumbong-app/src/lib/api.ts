@@ -15,6 +15,8 @@ export const getStorageUrl = (path: string): string => {
   return `${baseUrl}${path.startsWith('/') ? path : `/${path}`}`;
 };
 
+export const getBackendUrl = (): string => API_BASE_URL.replace(/\/api$/, '');
+
 // Helper function to get auth token from localStorage
 const getAuthToken = (): string | null => {
   if (typeof window === 'undefined') return null;

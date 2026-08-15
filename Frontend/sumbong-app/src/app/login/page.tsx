@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Button from '@/components/mobile/Button';
 import Card from '@/components/mobile/Card';
 import { useAuth } from '@/contexts/AuthContext';
+import { getBackendUrl } from '@/lib/api';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -20,7 +21,13 @@ export default function LoginPage() {
     setError('');
     
     try {
-      await login(email, password);
+      const result = await login(email, password);
+
+      if (result.user?.role?.name === 'admin' && result.token) {
+        window.location.href = `${getBackendUrl()}/auth/api-bridge?token=${encodeURIComponent(result.token)}`;
+        return;
+      }
+
       router.push('/home');
     } catch (err: any) {
       setError(err.message || 'Login failed. Please check your credentials.');

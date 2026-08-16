@@ -60,15 +60,15 @@ export default function RequestsPage() {
     <Layout title="My Requests">
       <div className="p-4">
         {/* Filter Tabs */}
-        <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
+        <div className="flex gap-2 mb-4 overflow-x-auto pb-2 no-scrollbar">
           {statusFilters.map((status) => (
             <button
               key={status.value}
               onClick={() => setFilter(status.value)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap ${
+              className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
                 filter === status.value
                   ? 'bg-blue-600 text-white'
-                  : 'bg-white text-gray-700 border border-gray-300'
+                  : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
               }`}
             >
               {status.label}

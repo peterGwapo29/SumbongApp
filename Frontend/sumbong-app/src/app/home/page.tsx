@@ -90,13 +90,13 @@ export default function HomePage() {
       <div className="p-4 space-y-4">
         {/* Welcome Section */}
         <Card>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Welcome back!</h2>
-          <p className="text-gray-600">Quick access to city services</p>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Welcome back!</h2>
+          <p className="text-gray-600 dark:text-gray-400">Quick access to city services</p>
         </Card>
 
         {/* Quick Actions */}
         <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-3">Quick Actions</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Quick Actions</h3>
           <div className="grid grid-cols-2 gap-3">
             <Button
               onClick={() => handleNavigation('/create', 'Opening create request...')}
@@ -120,10 +120,10 @@ export default function HomePage() {
 
         {/* Service Types */}
         <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-3">Available Services</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Available Services</h3>
           {loading ? (
             <Card>
-              <p className="text-center py-4 text-gray-600">Loading services...</p>
+              <p className="text-center py-4 text-gray-600 dark:text-gray-400">Loading services...</p>
             </Card>
           ) : serviceTypes.length > 0 ? (
             <div className="space-y-2">
@@ -136,17 +136,17 @@ export default function HomePage() {
                   <div className="flex items-center">
                     <span className="text-2xl mr-3">{service.icon || '📋'}</span>
                     <div className="flex-1">
-                      <h4 className="font-medium text-gray-900">{service.name}</h4>
-                      <p className="text-sm text-gray-600">{service.department}</p>
+                      <h4 className="font-medium text-gray-900 dark:text-white">{service.name}</h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">{service.department}</p>
                     </div>
-                    <span className="text-gray-400">→</span>
+                    <span className="text-gray-400 dark:text-gray-500">→</span>
                   </div>
                 </Card>
               ))}
             </div>
           ) : (
             <Card>
-              <p className="text-center py-4 text-gray-600">No services available</p>
+              <p className="text-center py-4 text-gray-600 dark:text-gray-400">No services available</p>
             </Card>
           )}
           <Button
@@ -163,17 +163,17 @@ export default function HomePage() {
         {/* Recent Requests */}
         <div>
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-lg font-semibold text-gray-900">Recent Requests</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Recent Requests</h3>
             <button
               onClick={() => handleNavigation('/requests', 'Loading requests...')}
-              className="text-sm text-blue-600"
+              className="text-sm text-blue-600 dark:text-blue-400 font-medium"
             >
               View All
             </button>
           </div>
           {loading ? (
             <Card>
-              <p className="text-center py-4 text-gray-600">Loading requests...</p>
+              <p className="text-center py-4 text-gray-600 dark:text-gray-400">Loading requests...</p>
             </Card>
           ) : recentRequests.length > 0 ? (
             <div className="space-y-2">
@@ -190,8 +190,8 @@ export default function HomePage() {
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <h4 className="font-medium text-gray-900 mb-1">{request.title}</h4>
-                      <p className="text-sm text-gray-600 mb-2">
+                      <h4 className="font-medium text-gray-900 dark:text-white mb-1">{request.title}</h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
                         {typeof request.location === 'object' ? request.location.address : request.address || 'No address'}
                       </p>
                       <StatusBadge status={request.status} />
@@ -202,18 +202,18 @@ export default function HomePage() {
             </div>
           ) : (
             <Card>
-              <p className="text-gray-600 text-center py-4">No requests yet</p>
+              <p className="text-gray-600 dark:text-gray-400 text-center py-4">No requests yet</p>
             </Card>
           )}
         </div>
 
         {/* Notifications Alert */}
         {unreadNotifications > 0 && (
-          <Card className="bg-blue-50 border-blue-200">
+          <Card className="bg-blue-50 dark:bg-blue-950/50 border-blue-200 dark:border-blue-800">
             <div className="flex items-center justify-between">
               <div>
-                <h4 className="font-medium text-blue-900">New Notifications</h4>
-                <p className="text-sm text-blue-700">{unreadNotifications} unread</p>
+                <h4 className="font-medium text-blue-900 dark:text-blue-200">New Notifications</h4>
+                <p className="text-sm text-blue-700 dark:text-blue-300">{unreadNotifications} unread</p>
               </div>
               <Button
                 variant="primary"

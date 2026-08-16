@@ -48,7 +48,7 @@ export default function Card({
 
   return (
     <div
-      className={`bg-white rounded-lg shadow-sm border border-gray-200 p-4 ${
+      className={`bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 ${
         onClick ? 'cursor-pointer hover:shadow-md transition-shadow' : ''
       } ${isLoading ? 'opacity-75 pointer-events-none' : ''} ${className}`}
       onClick={handleClick}

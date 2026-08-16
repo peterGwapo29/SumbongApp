@@ -169,30 +169,30 @@ function CreateRequestForm() {
 
           {/* Service Type Selection */}
           <Card>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
               Service Type *
             </label>
             <select
               value={formData.service_type_id}
               onChange={(e) => setFormData({ ...formData, service_type_id: e.target.value })}
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white bg-white dark:bg-gray-800"
             >
-              <option value="">Select a service...</option>
+              <option value="" className="dark:bg-gray-800 dark:text-white">Select a service...</option>
               {serviceTypes.filter(s => s.is_active !== false).map((service) => (
-                <option key={service.id} value={service.id}>
+                <option key={service.id} value={service.id} className="dark:bg-gray-800 dark:text-white">
                   {service.icon || '📋'} {service.name} - {service.department}
                 </option>
               ))}
             </select>
             {selectedService && (
-              <p className="text-sm text-gray-600 mt-2">{selectedService.description}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">{selectedService.description}</p>
             )}
           </Card>
 
           {/* Title */}
           <Card>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
               Title *
             </label>
             <input
@@ -200,14 +200,14 @@ function CreateRequestForm() {
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white placeholder:text-gray-400"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white bg-white dark:bg-gray-800 placeholder:text-gray-400 dark:placeholder:text-gray-500"
               placeholder="Brief description of the issue"
             />
           </Card>
 
           {/* Description */}
           <Card>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
               Description *
             </label>
             <textarea
@@ -215,43 +215,43 @@ function CreateRequestForm() {
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               required
               rows={4}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white placeholder:text-gray-400"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white bg-white dark:bg-gray-800 placeholder:text-gray-400 dark:placeholder:text-gray-500"
               placeholder="Provide detailed information about your request..."
             />
           </Card>
 
           {/* Location */}
           <Card>
-            <h3 className="text-sm font-medium text-gray-700 mb-3">Location *</h3>
+            <h3 className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-3">Location *</h3>
             <div className="space-y-3">
               <div>
-                <label className="block text-xs text-gray-600 mb-1">Address</label>
+                <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Address</label>
                 <input
                   type="text"
                   value={formData.address}
                   onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                   required
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white placeholder:text-gray-400"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white bg-white dark:bg-gray-800 placeholder:text-gray-400 dark:placeholder:text-gray-500"
                   placeholder="Street address"
                 />
               </div>
               <div>
-                <label className="block text-xs text-gray-600 mb-1">Barangay</label>
+                <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Barangay</label>
                 <input
                   type="text"
                   value={formData.barangay}
                   onChange={(e) => setFormData({ ...formData, barangay: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white placeholder:text-gray-400"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white bg-white dark:bg-gray-800 placeholder:text-gray-400 dark:placeholder:text-gray-500"
                   placeholder="Barangay"
                 />
               </div>
               <div>
-                <label className="block text-xs text-gray-600 mb-1">City</label>
+                <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">City</label>
                 <input
                   type="text"
                   value={formData.city}
                   onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white placeholder:text-gray-400"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white bg-white dark:bg-gray-800 placeholder:text-gray-400 dark:placeholder:text-gray-500"
                   placeholder="City"
                 />
               </div>
@@ -260,32 +260,32 @@ function CreateRequestForm() {
 
           {/* Priority */}
           <Card>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
               Priority
             </label>
             <select
               value={formData.priority}
               onChange={(e) => setFormData({ ...formData, priority: e.target.value as any })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white bg-white dark:bg-gray-800"
             >
-              <option value="low">Low</option>
-              <option value="medium">Medium</option>
-              <option value="high">High</option>
-              <option value="urgent">Urgent</option>
+              <option value="low" className="dark:bg-gray-800 dark:text-white">Low</option>
+              <option value="medium" className="dark:bg-gray-800 dark:text-white">Medium</option>
+              <option value="high" className="dark:bg-gray-800 dark:text-white">High</option>
+              <option value="urgent" className="dark:bg-gray-800 dark:text-white">Urgent</option>
             </select>
           </Card>
 
           {/* Area Photo */}
           <Card>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
               Area Photo
             </label>
-            <p className="text-xs text-gray-500 mb-3">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
               Take a photo or choose from your gallery so admins can see the situation
             </p>
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+            <div className="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg p-6 text-center bg-gray-50/50 dark:bg-gray-800/40">
               <span className="text-3xl mb-2 block">📷</span>
-              <p className="text-sm text-gray-600 mb-4">
+              <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
                 {files.length > 0
                   ? `${files.length} photo${files.length > 1 ? 's' : ''} selected`
                   : 'No photos added yet'}

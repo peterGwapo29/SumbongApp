@@ -18,6 +18,8 @@ export const viewport: Viewport = {
   themeColor: '#2563eb',
 };
 
+import { ThemeProvider } from '@/contexts/ThemeContext';
+
 export default function RootLayout({
   children,
 }: {
@@ -26,13 +28,15 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <AuthProvider>
-          <LoadingProvider>
-            <NotificationsProvider>
-              <main>{children}</main>
-            </NotificationsProvider>
-          </LoadingProvider>
-        </AuthProvider>
+        <ThemeProvider>
+          <AuthProvider>
+            <LoadingProvider>
+              <NotificationsProvider>
+                <main>{children}</main>
+              </NotificationsProvider>
+            </LoadingProvider>
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   )
